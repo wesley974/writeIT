@@ -2,29 +2,69 @@
 ## Script powershell
 
 ```powershell
-# Définir le chemin du journal de pare-feu
-$logFilePath = "C:\Windows\System32\LogFiles\Firewall\pfirewall.log"
-
-# Vérifier si le fichier de log existe
-if (Test-Path $logFilePath) {
-    Write-Host "Surveillance du fichier de log : $logFilePath"
-} else {
-    Write-Host "Le fichier de log n'existe pas : $logFilePath"
-    exit
-}
-
-# Lire le fichier de log en temps réel et filtrer les paquets bloqués
-Get-Content $logFilePath -Wait | Where-Object { $_ -match "DROP" } | ForEach-Object {
-    $logEntry = $_
-    $fields = $logEntry -split "\s+"
-    $timestamp = $fields[0] + " " + $fields[1]
-    $action = $fields[2]
-    $protocol = $fields[3]
-    $srcIP = $fields[4]
-    $destIP = $fields[5]
-    $srcPort = $fields[6]
-    $destPort = $fields[7]
-    Write-Host "[$timestamp] Paquet bloqué - Action: $action, Protocole: $protocol, Src: $srcIP:$srcPort, Dest: $destIP:$destPort"
-}
+Need to correct this part
 ```
+
+# Deploying a Static Website with Surge CLI on Windows
+## Node.js
+
+Step 1: Install Surge CLI
+
+First, ensure you have [Node.js](https://nodejs.org/) installed. Then, open your command prompt and install Surge globally:
+
+```bash
+npm install -g surge
+```
+Step 2: Prepare Your HTML Folder
+
+Create a folder named <b>html</b> on your desktop containing your website files:
+
+```
+C:\Users\YourName\Desktop\html
+    ├── index.html
+    ├── about.html
+    └── styles.css
+```
+
+Step 3: Deploy Your Site
+
+Navigate to your <b>html</b> folder in the command prompt:
+
+```
+cd C:\Users\YourName\Desktop\html
+```
+
+Deploy your site with Surge:
+
+```
+surge
+```
+
+Follow the instructions.
+
+Step 4: Update Your Site
+
+To update your site, modify the files in your <b>html</b> folder and run:
+
+```
+surge
+```
+
+Surge will update the deployment.
+
+Step 5: Remove Your Site
+
+To remove your site, run:
+
+```
+surge teardown example.surge.sh
+```
+
+Replace example.surge.sh with your domain.
+
+That's it! Your static site is now online!
+
+
+
+
 
