@@ -41,6 +41,7 @@ surge
 ```
 
 Follow the instructions.
+Quickly, your static site is now online!
 
 Step 4: Update Your Site
 
@@ -59,10 +60,7 @@ To remove your site, run:
 ```
 surge teardown example.surge.sh
 ```
-
 Replace example.surge.sh with your domain.
-
-That's it! Your static site is now online!
 
 # Telnet
 ## Script powershell
