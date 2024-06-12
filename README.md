@@ -68,34 +68,38 @@ That's it! Your static site is now online!
 ## Script powershell
 
 ```powershell
-# Fonction pour tester la connexion Telnet à une IP et un port spécifiques en utilisant Test-Port
 function Test-Port {
+
   param (
     [string]$Computer,
     [int]$Port,
     [int]$Millisecond = 100,
-    [string]$type
+    [boolean]$multiple = $false
   )
 
-  # Initialiser l'objet
   $Test = New-Object -TypeName Net.Sockets.TcpClient
 
   try {
-    # Tenter la connexion avec un timeout de 100 millisecondes
+
+    # Attempting to connect with a timeout of 100 milliseconds
+
     $result = ($Test.BeginConnect($Computer, $Port, $null, $null)).AsyncWaitHandle.WaitOne($Millisecond)
     if ($result) {
+      
       Write-Output "--> ${Computer}:${Port} is open"
-      if ($type){
+      
+      if ($multiple){
         return "GOOD"
       }
+
     }
+
   } finally {
     # Cleanup
     $Test.Close()
   }
 }
 
-# Fonction pour tester une plage d'IP et une plage de ports en utilisant Test-Port
 function Test-TelnetRange {
   param (
     [string]$StartIP,
@@ -105,52 +109,63 @@ function Test-TelnetRange {
   )
 
   $currentIP = [System.Net.IPAddress]::Parse($StartIP).GetAddressBytes()
-  $endIP = [System.Net.IPAddress]::Parse($EndIP).GetAddressBytes()
-  $connectedOnce = $false
+  $endIPBytes = [System.Net.IPAddress]::Parse($EndIP).GetAddressBytes()
+
+  # Assuming comparison should be on the last byte of IPv4 addresses
+  $startNumber = $currentIP[3]
+  $endNumber = $endIPBytes[3]
+
+  if ($startNumber -eq 0 -or $endNumber -eq 0){
+    Write-Error("--> Zero is not allowed as last byte!")
+    exit
+  }
+
+  if ($startNumber -gt 254 -or $endNumber -gt 254){
+    Write-Error("--> 254 is the max for the last byte!")
+    exit
+  }
+
+  if ($startNumber -gt $endNumber) {
+      Write-Error("--> Start IP is higher than EndIP!")
+      exit
+  }
+
+  for ($i = 0; $i -lt 3; $i++) {
+    if ($currentIP[$i] -ne $endIPBytes[$i]) {
+      Write-Error("--> Class C only!")
+      exit
+    }
+  }
 
   while ($true) {
     $currentIPString = ($currentIP -join '.')
     $connectionResult = "BAD"
 
+    # Ports stuff
     for ($port = $StartPort; $port -le $EndPort; $port++) {
-      $connectionResult = Test-Port -Computer $currentIPString -Port $port -type 'any'
+      $connectionResult = Test-Port -Computer $currentIPString -Port $port -multiple $true
       if ($connectionResult -eq "GOOD") {
-        $connectedOnce = $true
         Write-Output $connectionResult[0]
-        break
       }
     }
 
-    # Exit loop if no connection after the first successful one
-    if ($connectedOnce -and !$allMax) {
-      break
+    # IP stuff
+    if ($startNumber -eq $endnumber){
+        exit
     }
 
-    # Increment IP address
-    $carry = $false
-    for ($i = $currentIP.Length - 1; $i -ge 0; $i--) {
-      if ($currentIP[$i] -lt 254) {
-        $currentIP[$i]++
-        $carry = $false
-        break
-      } else {
-        $currentIP[$i] = 0
-        $carry = $true
-      }
-    }
+    $startNumber++
 
-    # Exit loop if we overflowed (reached end IP)
-    if ($carry) {
-      break
-    }
+    $currentIP[3] = $startNumber 
+
   }
 }
 
-# Exemple d'utilisation - cas 1
-Test-TelnetRange -StartIP "8.8.4.1" -EndIP "8.8.4.5" -StartPort 50 -EndPort 53
-
-# Exemple d'utilisation - cas 2
+# Sample, case 1
 Test-Port -Computer "8.8.8.8" -Port 53
+
+# Sample, case 2
+Test-TelnetRange -StartIP "8.8.4.2" -EndIP "8.8.4.8" -StartPort 50 -EndPort 55
 ```
 
 
