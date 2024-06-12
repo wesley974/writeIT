@@ -41,7 +41,8 @@ surge
 ```
 
 Follow the instructions.
-Quickly, your static site is now online!
+
+> Quickly, your static site will be online! 🚀
 
 Step 4: Update Your Site
 
